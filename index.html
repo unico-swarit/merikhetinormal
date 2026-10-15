@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kisan Saha · Pro Irrigation Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090b10; --card:#12151c; --border:#1f232e;
+  --text:#f8fafc; --muted:#8b94a5; --faint:#333847;
+  --good:#00e676; --bad:#ff1744; --warn:#ff9100; --info:#00b0ff;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--font)}
+body{
+  background:var(--bg);color:var(--text);min-height:100vh;
+  padding:20px 16px 40px;line-height:1.5;overflow-x:hidden;
+}
+.wrap{max-width:1100px;margin:0 auto}
+
+/* Header */
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:14px}
+.logo-icon{
+  width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#00b0ff,#00e676);
+  display:grid;place-items:center;font-size:1.5rem;box-shadow:0 0 24px rgba(0,230,118,0.25);
+}
+h1{font-size:1.4rem;font-weight:800;letter-spacing:-0.02em}
+.sub{font-size:0.85rem;color:var(--muted);font-weight:600}
+.conn-pill{
+  display:inline-flex;align-items:center;gap:10px;padding:8px 18px;border-radius:999px;
+  background:#0e1117;border:1px solid var(--border);font-size:0.85rem;font-weight:700;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.5);
+}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--faint);transition:0.3s}
+.dot.live{background:var(--good);box-shadow:0 0 12px var(--good);animation:pulse 2s infinite}
+.dot.offline{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+@keyframes pulse{50%{box-shadow:0 0 20px var(--good)}}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:24px;
+  padding:26px;box-shadow:0 12px 40px rgba(0,0,0,0.5);
+}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card-label{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)}
+
+/* Metric Cards */
+.moisture-card{grid-column:span 4}
+.metrics-stack{grid-column:span 8;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.full-width{grid-column:span 2}
+.big-val{font-size:3.2rem;font-weight:800;line-height:1;letter-spacing:-0.03em;color:#fff}
+.big-val small{font-size:1.4rem;font-weight:600;color:var(--muted);margin-left:4px}
+.spark{width:100%;height:40px;margin-top:14px;overflow:visible}
+.spark path{fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke}
+.spark.temp path{stroke:#ff9100}
+.spark.hum path{stroke:#00b0ff}
+
+/* Gauge */
+.gauge-box{position:relative;width:100%;max-width:260px;margin:10px auto 0;aspect-ratio:1}
+.gauge-box svg{width:100%;height:100%;display:block}
+.g-track{fill:none;stroke:#1a1d26;stroke-width:14;stroke-linecap:round}
+.g-prog{fill:none;stroke:var(--good);stroke-width:14;stroke-linecap:round;transition:stroke-dasharray 0.8s cubic-bezier(0.4, 0, 0.2, 1),stroke 0.4s}
+.g-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.g-val{font-size:3.5rem;font-weight:800;letter-spacing:-0.03em}
+.g-status{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-top:6px;padding:4px 12px;border-radius:20px}
+
+/* Advanced Configuration UI */
+.config-card{grid-column:span 7}
+.field-group{margin-bottom:20px}
+.field-label{font-size:0.8rem;font-weight:700;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between}
+
+/* Premium Dropdown */
+select{
+  width:100%;padding:14px 16px;background:#090b10;border:1px solid var(--border);
+  border-radius:14px;color:#fff;font-size:1rem;font-weight:700;outline:none;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.5);cursor:pointer;
+}
+
+/* Premium Segmented Controls (Replaces generic buttons) */
+.segmented-control{
+  display:flex;background:#090b10;padding:6px;border-radius:16px;border:1px solid var(--border);
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.6);
+}
+.seg-btn{
+  flex:1;padding:12px;border:none;background:transparent;color:var(--muted);font-weight:700;
+  font-size:0.9rem;border-radius:12px;cursor:pointer;transition:all 0.3s ease;
+}
+.seg-btn.active{background:#1e2330;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);}
+.seg-btn.season.active{color:var(--warn);}
+.seg-btn.mode.active{color:var(--info);}
+
+/* Digital Target Readout (Replaced Sliders) */
+.target-readout{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:#090b10;
+  padding:20px;border-radius:16px;border:1px solid var(--border);margin-top:10px;
+  box-shadow:inset 0 4px 12px rgba(0,0,0,0.6);
+}
+.target-val{text-align:center;display:flex;flex-direction:column;gap:6px}
+.target-val span{font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.target-val b{font-size:2rem;font-weight:800;color:#fff}
+.target-divider{width:2px;height:40px;background:var(--border)}
+
+/* Controls & Hardware Buttons */
+.controls-card{grid-column:span 5}
+.pump-status-row{
+  display:flex;align-items:center;justify-content:space-between;padding:16px;
+  background:#090b10;border-radius:16px;border:1px solid var(--border);margin-bottom:18px;
+  box-shadow:inset 0 2px 10px rgba(0,0,0,0.4);
+}
+.led-box{display:flex;align-items:center;gap:12px}
+.led-indicator{width:14px;height:14px;border-radius:50%;background:#1a1d26;border:1px solid #333}
+.led-indicator.on{background:var(--good);box-shadow:0 0 16px var(--good);border-color:var(--good)}
+
+.ctrl-btns{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* Industrial Hardware Button Style */
+.action-btn{
+  padding:18px 10px;border-radius:16px;font-size:1rem;font-weight:800;letter-spacing:0.05em;
+  cursor:pointer;color:#fff;transition:all 0.15s ease;
+  background:linear-gradient(145deg, #181b24, #101218);
+  border:1px solid #2a2d38;
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.5), -2px -2px 10px rgba(255,255,255,0.03);
+}
+.action-btn:active:not(:disabled){
+  transform:scale(0.96);
+  box-shadow: inset 4px 4px 12px rgba(0,0,0,0.6), inset -2px -2px 10px rgba(255,255,255,0.02);
+}
+.action-btn.start{color:var(--good);border-bottom:2px solid var(--good)}
+.action-btn.stop{color:var(--bad);border-bottom:2px solid var(--bad)}
+.action-btn:disabled{
+  opacity:0.4;cursor:not-allowed;filter:grayscale(1);
+  box-shadow:none;border-bottom:1px solid #2a2d38;
+}
+
+@media(max-width:900px){
+  .moisture-card,.metrics-stack,.config-card,.controls-card{grid-column:span 12}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo-icon">🌾</div>
+      <div>
+        <h1>Kisan Saha (किसान सहा)</h1>
+        <div class="sub">Pro Agronomic Engine · NodeMCU</div>
+      </div>
+    </div>
+    <div class="conn-pill">
+      <span class="dot" id="netDot"></span>
+      <span id="netText">Syncing Data…</span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Moisture Gauge -->
+    <div class="card moisture-card">
+      <div class="card-header">
+        <span class="card-label">मिट्टी की नमी (Soil Moisture)</span>
+        <span style="font-size:0.75rem;color:var(--muted)">Pin V0</span>
+      </div>
+      <div class="gauge-box">
+        <svg viewBox="0 0 200 200">
+          <circle class="g-track" cx="100" cy="100" r="82" stroke-dasharray="386.4 515.2" transform="rotate(135 100 100)"/>
+          <circle id="gaugeProg" class="g-prog" cx="100" cy="100" r="82" stroke-dasharray="0 515.2" transform="rotate(135 100 100)"/>
+        </svg>
+        <div class="g-center">
+          <div class="g-val"><span id="moistVal">--</span><small style="font-size:1.6rem">%</small></div>
+          <div id="moistBadge" class="g-status" style="background:#1a1d26;color:var(--muted)">Scanning</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:0.8rem;font-weight:700;color:var(--faint)">
+        <span>DRY</span>
+        <span id="targetStatusText" style="color:var(--muted)">Target Locked</span>
+        <span>WET</span>
+      </div>
+    </div>
+
+    <!-- Temperature & Humidity -->
+    <div class="metrics-stack">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">तापमान (Temp)</span>
+          <span style="font-size:0.75rem;color:var(--warn)">V1</span>
+        </div>
+        <div class="big-val"><span id="tempVal">--</span><small>°C</small></div>
+        <svg class="spark temp" id="sparkTemp" viewBox="0 0 100 30" preserveAspectRatio="none"><path d=""/></svg>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">हवा की नमी (Hum)</span>
+          <span style="font-size:0.75rem;color:var(--info)">V2</span>
+        </div>
+        <div class="big-val"><span id="humVal">--</span><small>%</small></div>
+        <svg class="spark hum" id="sparkHum" viewBox="0 0 100 30" preserveAspectRatio="none"><path d=""/></svg>
+      </div>
+
+      <div class="card full-width">
+        <div class="card-header">
+          <span class="card-label">सिस्टम डायग्नोस्टिक्स (V6)</span>
+        </div>
+        <div style="font-size:1.2rem;font-weight:700;color:var(--info);letter-spacing:0.02em" id="v6Msg">Waiting for connection…</div>
+      </div>
+    </div>
+
+    <!-- 100% Automated Agronomic Config (NO SLIDERS) -->
+    <div class="card config-card">
+      <div class="card-header">
+        <span class="card-label">फसल एवं मौसम एआई (Agronomic Intelligence)</span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label"><span>फसल का प्रकार (Selected Crop)</span><span id="cropSpec" style="color:var(--info)">Root Zone: Medium</span></div>
+        <select id="cropSelect" onchange="recalculateTargets()">
+          <option value="potato" selected>4. Potato (आलू) · Base Target: 40% - 70%</option>
+          <option value="wheat">Wheat (गेहूँ) · Base Target: 35% - 65%</option>
+          <option value="tomato">Tomato (टमाटर) · Base Target: 45% - 75%</option>
+          <option value="rice">Rice (धान) · Base Target: 60% - 85%</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label"><span>वर्तमान मौसम (Season Profile)</span><span id="seasonNote" style="color:var(--warn)">+5% Heat Offset</span></div>
+        <div class="segmented-control">
+          <button class="seg-btn season active" id="sSummer" onclick="setSeason('summer')">Summer</button>
+          <button class="seg-btn season" id="sWinter" onclick="setSeason('winter')">Winter</button>
+          <button class="seg-btn season" id="sRainy" onclick="setSeason('rainy')">Rainy</button>
+        </div>
+      </div>
+
+      <!-- Sleek Digital Readout instead of generic sliders -->
+      <div class="field-label" style="margin-top:24px;margin-bottom:0"><span>कैलकुलेटेड थ्रेशोल्ड (Auto-Calculated Targets)</span></div>
+      <div class="target-readout">
+        <div class="target-val">
+          <span>पंप चालू (Min)</span>
+          <b id="calcMin" style="color:var(--warn)">40%</b>
+        </div>
+        <div class="target-divider"></div>
+        <div class="target-val">
+          <span>पंप बंद (Max)</span>
+          <b id="calcMax" style="color:var(--good)">70%</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card controls-card">
+      <div class="card-header">
+        <span class="card-label">कंट्रोल पैनल (Manual/Auto Override)</span>
+      </div>
+
+      <div class="field-group">
+        <div class="segmented-control" style="margin-bottom:20px">
+          <button class="seg-btn mode active" id="mAuto" onclick="switchMode(1)">Auto On (स्मार्ट मोड)</button>
+          <button class="seg-btn mode" id="mManual" onclick="switchMode(0)">Manual (हाथ से)</button>
+        </div>
+      </div>
+
+      <div class="pump-status-row">
+        <div class="led-box">
+          <span class="led-indicator" id="v5Led"></span>
+          <b id="pumpStateTxt" style="font-size:1rem">Motor Stopped</b>
+        </div>
+        <span style="font-size:0.75rem;color:var(--muted);font-weight:700">Relay D1</span>
+      </div>
+
+      <div class="ctrl-btns">
+        <button class="action-btn start" id="startBtn" onclick="triggerPump(1)" disabled>START PUMP</button>
+        <button class="action-btn stop" id="stopBtn" onclick="triggerPump(0)" disabled>STOP PUMP</button>
+      </div>
+      
+      <div id="safetyHint" style="font-size:0.75rem;color:var(--muted);margin-top:16px;text-align:center;font-weight:600">
+        🔒 Manual override is locked in Auto Mode.
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const ENDPOINTS = [
+    "https://blr1.blynk.cloud/external/api",
+    "https://blynk.cloud/external/api"
+  ];
+  let activeBase = ENDPOINTS[0];
+  const TOKEN = "paA92qkJbuRNlsEXmawF9naBXlrNACnm";
+
+  let autoMode = 1;
+  let activeSeason = "summer";
+  let minWater = 40; 
+  let maxWater = 70;
+  let isHardwareOnline = false;
+  let tempHistory = [], humHistory = [];
+
+  const crops = {
+    potato: { min: 40, max: 70, note: "Root Zone: Medium" },
+    wheat:  { min: 35, max: 65, note: "Shallow Root" },
+    tomato: { min: 45, max: 75, note: "Moisture Sensitive" },
+    rice:   { min: 60, max: 85, note: "High Saturation" }
+  };
+
+  async function api(path) {
+    try {
+      const res = await fetch(`${activeBase}/${path}&token=${TOKEN}`, { cache: "no-store" });
+      if (!res.ok) throw new Error();
+      return await res.text();
+    } catch {
+      activeBase = (activeBase === ENDPOINTS[0]) ? ENDPOINTS[1] : ENDPOINTS[0];
+      const res2 = await fetch(`${activeBase}/${path}&token=${TOKEN}`, { cache: "no-store" });
+      return await res2.text();
+    }
+  }
+
+  // 100% Automated Calculation Engine
+  window.recalculateTargets = () => {
+    const c = crops[document.getElementById('cropSelect').value];
+    document.getElementById('cropSpec').innerText = c.note;
+    
+    let offset = 0;
+    if(activeSeason === 'summer') offset = 5;       // +5% evaporation offset
+    else if(activeSeason === 'rainy') offset = -5;  // -5% moisture retention
+
+    minWater = c.min + offset;
+    maxWater = c.max + offset;
+
+    document.getElementById('calcMin').innerText = minWater + "%";
+    document.getElementById('calcMax').innerText = maxWater + "%";
+  };
+
+  window.setSeason = (s) => {
+    activeSeason = s;
+    ['Summer', 'Winter', 'Rainy'].forEach(name => {
+      document.getElementById('s' + name).classList.toggle('active', name.toLowerCase() === s);
+    });
+    
+    const note = document.getElementById('seasonNote');
+    if (s === 'summer') { note.innerText = "+5% Heat Offset"; note.style.color = "var(--warn)"; }
+    else if (s === 'rainy') { note.innerText = "-5% Moisture Retention"; note.style.color = "var(--info)"; }
+    else { note.innerText = "Base Profile"; note.style.color = "var(--muted)"; }
+    
+    recalculateTargets(); 
+  };
+
+  window.switchMode = async (m) => {
+    autoMode = m;
+    document.getElementById('mAuto').classList.toggle('active', m === 1);
+    document.getElementById('mManual').classList.toggle('active', m === 0);
+    document.getElementById('startBtn').disabled = (m === 1 || !isHardwareOnline);
+    document.getElementById('stopBtn').disabled = (m === 1);
+    document.getElementById('safetyHint').innerText = m === 1 
+      ? "🔒 Manual override is locked in Auto Mode." 
+      : "🔓 Manual override active. You can toggle the pump.";
+    await api(`update?v3=${m}`);
+  };
+
+  window.triggerPump = async (state) => {
+    if (autoMode === 1) return;
+    await api(`update?v4=${state}`);
+    setTimeout(pollTelemetry, 600); // Fast feedback
+  };
+
+  function updateSpark(id, data) {
+    if (data.length < 2) return;
+    const min = Math.min(...data), max = Math.max(...data), span = (max - min) || 1;
+    const pts = data.map((v, i) => `${(i / (data.length - 1)) * 100},${28 - ((v - min) / span) * 24}`);
+    document.querySelector(`#${id} path`).setAttribute('d', `M${pts.join(' L')}`);
+  }
+
+  async function pollTelemetry() {
+    try {
+      const [v0, v1, v2, v3, v4, v5, v6, hwStatus] = await Promise.all([
+        api("get?v0"), api("get?v1"), api("get?v2"),
+        api("get?v3"), api("get?v4"), api("get?v5"),
+        api("get?v6"), api("isHardwareConnected?")
+      ]);
+
+      isHardwareOnline = (hwStatus.trim() === "true");
+      const dot = document.getElementById('netDot');
+      const text = document.getElementById('netText');
+
+      if (isHardwareOnline) {
+        dot.className = "dot live";
+        text.innerText = "System Online";
+      } else {
+        dot.className = "dot offline";
+        text.innerText = "System Offline";
+        document.getElementById('startBtn').disabled = true; // Safety Lock
+      }
+
+      // Moisture Gauge Update
+      const moist = Math.min(100, Math.max(0, parseInt(v0) || 0));
+      document.getElementById('moistVal').innerText = moist;
+      const arc = 386.4 * (moist / 100);
+      const prog = document.getElementById('gaugeProg');
+      prog.style.strokeDasharray = `${arc} 515.2`;
+
+      const badge = document.getElementById('moistBadge');
+      if (moist < minWater) {
+        badge.innerText = "CRITICAL (DRY)";
+        badge.style.background = "rgba(255,23,68,0.15)";
+        badge.style.color = "var(--bad)";
+        prog.style.stroke = "var(--bad)";
+      } else if (moist > maxWater) {
+        badge.innerText = "SATURATED";
+        badge.style.background = "rgba(0,176,255,0.15)";
+        badge.style.color = "var(--info)";
+        prog.style.stroke = "var(--info)";
+      } else {
+        badge.innerText = "OPTIMAL";
+        badge.style.background = "rgba(0,230,118,0.15)";
+        badge.style.color = "var(--good)";
+        prog.style.stroke = "var(--good)";
+      }
+
+      // Climate
+      const t = parseFloat(v1) || 0;
+      const h = parseFloat(v2) || 0;
+      document.getElementById('tempVal').innerText = t ? t.toFixed(1) : "--";
+      document.getElementById('humVal').innerText = h ? h.toFixed(0) : "--";
+
+      if (t) { tempHistory.push(t); if (tempHistory.length > 25) tempHistory.shift(); updateSpark('sparkTemp', tempHistory); }
+      if (h) { humHistory.push(h); if (humHistory.length > 25) humHistory.shift(); updateSpark('sparkHum', humHistory); }
+
+      // Pump Feedback (V5)
+      const isPumpRunning = (v5 == "255" || v5 == "1");
+      document.getElementById('v5Led').className = isPumpRunning ? "led-indicator on" : "led-indicator";
+      document.getElementById('pumpStateTxt').innerText = isPumpRunning ? "Motor is Running" : "Motor is Stopped";
+      document.getElementById('pumpStateTxt').style.color = isPumpRunning ? "var(--good)" : "var(--text)";
+
+      if (v6) document.getElementById('v6Msg').innerText = v6;
+    } catch (err) {
+      document.getElementById('netDot').className = "dot offline";
+      document.getElementById('netText').innerText = "Network Retry...";
+    }
+  }
+
+  // Boot Setup
+  recalculateTargets(); 
+  pollTelemetry();
+  setInterval(pollTelemetry, 2500);
+})();
+</script>
+</body>
+</html>
